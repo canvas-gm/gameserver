@@ -1,0 +1,18 @@
+{
+    "mordor": {
+        "socket": {
+            "host": "127.0.0.1",
+            "port": 1337
+        },
+        "retryInterval": 10000
+    },
+    "server": {
+        "port": 3000,
+        "authentication": {
+            "mordor": true,
+            "anonymous": true,
+            "anonymousPassword": null,
+            "shouldBeApproved": false
+        }
+    }
+}

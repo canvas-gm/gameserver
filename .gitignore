@@ -66,3 +66,4 @@ docs/
 # Gameserv projects and data
 projects/
 logs/
+config/editableSettings.json

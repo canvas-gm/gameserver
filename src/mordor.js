@@ -14,7 +14,7 @@ const { timeout, parseSocketMessages } = require("./utils");
  * @desc Project configuration!
  * @type {server.Configuration}
  */
-const settings = require("../config/settings.json");
+const settings = require("../config/editableSettings.json");
 
 /**
  * @const MAX_REQUESTS

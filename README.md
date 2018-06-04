@@ -10,13 +10,6 @@ $ npm start
 
 ## TODO
 
-> Think about how to scale for real-time performance
-
-- We should handle a logs mechanism
-```
--> Native Node.JS Console
-```
-
 - How to authenticate users ?
 ```
 -> Authenticate user by generating a AccessToken on the Mordor API.

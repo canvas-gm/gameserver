@@ -7,8 +7,28 @@ const { join } = require("path");
 const {
     mkdir,
     writeFile,
-    readFile
+    readFile,
+    writeFileSync
 } = require("fs");
+
+/**
+ * @const settings
+ * @type {server.Configuration}
+ */
+let settings;
+try {
+    settings = require("./config/editableSettings.json");
+}
+catch (error) {
+    console.log("Editable configuration created in directory /config");
+    console.log("Edit it like you want!");
+    const defaultSettings = require("./config/defaultSettings.json");
+    writeFileSync(
+        join(__dirname, "config/editableSettings.json"),
+        JSON.stringify(defaultSettings)
+    );
+    process.exit(0);
+}
 
 // Require Third-party Dependencies
 const uuid = require("uuid/v4");
@@ -21,12 +41,6 @@ const winston = require("winston");
 const Mordor = require("./src/mordor");
 const socketHandler = require("./src/socketHandler");
 const { hasEntry } = require("./src/utils");
-
-/**
- * @const settings
- * @type {server.Configuration}
- */
-const settings = require("./config/settings.json");
 
 // Asynchronous FS Wrapper
 const AsyncFS = {
