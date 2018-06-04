@@ -52,11 +52,48 @@ class Mordor extends events {
      * @returns {Promise<this>}
      */
     async init() {
+        this.client = null;
+        await this._synchroniseConnection();
+
+        // Handle (parse) socket data!
+        this.client.on("data", this.dataHandler.bind(this));
+
+        // If mordor connexion end, try to re-synchronise
+        this.client.on("end", async() => {
+            try {
+                await timeout(1000);
+                await this.init();
+            }
+            catch (error) {
+                console.error(error);
+                process.exit(1);
+            }
+        });
+
+        // Handle event ping/pong
+        this.on("ping", (dt) => {
+            console.log(blue("Ping received from Mordor. Send-it back!"));
+            this.send("ping", dt, true).catch(console.error);
+        });
+        console.log(green("Successfully initialized socket connection"));
+
+        return this;
+    }
+
+    /**
+     * @private
+     * @async
+     * @method _synchroniseConnection
+     * @desc Initialize (or-resync) socket connection
+     * @returns {Promise<void>}
+     */
+    async _synchroniseConnection() {
         const addr = `${settings.mordor.socket.host}:${settings.mordor.socket.port}`;
         console.log(yellow(`Try to iniatiliaze remote socket conn on ${addr}`));
+
         while (is.nullOrUndefined(this.client)) {
             try {
-                this.client = await Mordor.initializeClient();
+                this.client = await Mordor.initializeSocketConnection();
             }
             catch (error) {
                 if (error.code === "ECONNREFUSED") {
@@ -70,23 +107,14 @@ class Mordor extends events {
                 await timeout(settings.mordor.retryInterval);
             }
         }
-
-        this.client.on("data", this.dataHandler.bind(this));
-        this.client.on("end", () => {
-            this.emit("close");
-            console.log("Mordor Socket connection closed!");
-        });
-        console.log(green("Successfully initialized socket connection"));
-
-        return this;
     }
 
     /**
      * @static
-     * @func initializeClient
+     * @func initializeSocketConnection
      * @returns {Promise<Socket>}
      */
-    static initializeClient() {
+    static initializeSocketConnection() {
         return new Promise((resolve, reject) => {
             const client = net.connect(settings.mordor.socket, () => {
                 resolve(client);
@@ -133,11 +161,12 @@ class Mordor extends events {
      * @memberof Mordor#
      * @param {!String} title message title
      * @param {Object=} [body={}] message body
-     * @returns {Promise<T>}
+     * @param {Boolean=} [dontExpectReturn=false] True if we dont expect a return from Mordor
+     * @returns {Promise<T | void>}
      *
      * @throws {TypeError}
      */
-    send(title, body = {}) {
+    send(title, body = {}, dontExpectReturn = false) {
         return new Promise((resolve, reject) => {
             if (!is.string(title)) {
                 throw new TypeError("title argument should be typeof string");
@@ -145,12 +174,15 @@ class Mordor extends events {
             const data = JSON.stringify({ title, body });
             this.client.write(Buffer.from(data.concat("\n")));
 
+            // Return if we dont expect a return from Mordor
+            if (dontExpectReturn) {
+                return resolve();
+            }
+
             /** @type {NodeJS.Timer} */
             let timeOutRef = null;
             function handler(data) {
-                if (timeOutRef) {
-                    clearTimeout(timeOutRef);
-                }
+                clearTimeout(timeOutRef);
                 resolve(data);
             }
             timeOutRef = setTimeout(() => {
@@ -158,6 +190,8 @@ class Mordor extends events {
                 reject(new Error("Timeout"));
             }, 5000);
             this.addListener(title, handler);
+
+            return void 0;
         });
     }
 

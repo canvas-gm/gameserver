@@ -4,7 +4,7 @@
  * @returns {void}
  */
 function socketHandler(socket) {
-
+    console.log("socket connected!");
 }
 
 module.exports = socketHandler;

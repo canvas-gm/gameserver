@@ -13,6 +13,18 @@ const socketHandler = require("./src/socketHandler");
  */
 const settings = require("./config/settings.json");
 
+/** @type {Mordor} */
+let MordorSocket = null;
+
+/**
+ * @async
+ * @func socketListening
+ * @returns {Promise<void>}
+ */
+function socketListening() {
+    console.log(`Socket server is listening on port ${settings.server.port}`);
+}
+
 /**
  * @func main
  * @desc Main (global) handler of the project
@@ -20,14 +32,13 @@ const settings = require("./config/settings.json");
  */
 async function main() {
     // Create and initialize Mordor Client connection
-    const MordorSocket = await new Mordor().init();
+    MordorSocket = await new Mordor().init();
+    // MordorSocket.client.on("end", process.exit);
 
     // Initialize Socket Server
     const socketServer = createServer(socketHandler);
     socketServer.on("error", console.error);
-    socketServer.on("listening", function listening() {
-        console.log(`Socket server is listening on port ${settings.server.port}`);
-    });
+    socketServer.on("listening", socketListening);
     socketServer.listen(settings.server.port);
 }
 main().catch(console.error);
