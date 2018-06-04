@@ -76,6 +76,10 @@ class Mordor extends events {
             this.send("ping", dt, true).catch(console.error);
         });
         console.log(green("Successfully initialized socket connection"));
+        global.logger.log({
+            level: "info",
+            message: "Successfully initialized socket connection"
+        });
 
         return this;
     }
@@ -90,6 +94,10 @@ class Mordor extends events {
     async _synchroniseConnection() {
         const addr = `${settings.mordor.socket.host}:${settings.mordor.socket.port}`;
         console.log(yellow(`Try to iniatiliaze remote socket conn on ${addr}`));
+        global.logger.log({
+            level: "info",
+            message: `Try to iniatiliaze remote socket conn on ${addr}`
+        });
 
         while (is.nullOrUndefined(this.client)) {
             try {
@@ -97,9 +105,9 @@ class Mordor extends events {
             }
             catch (error) {
                 if (error.code === "ECONNREFUSED") {
-                    console.error(
-                        red(`Unable to establish Socket conn on remote server with addr ${addr}`)
-                    );
+                    const message = `Unable to establish Socket conn on remote server with addr ${addr}`;
+                    console.error(red(message));
+                    global.logger.log({ level: "warn", message });
                 }
                 console.error(
                     blue(`We will made a new attempt in ${settings.mordor.retryInterval} ms!`)

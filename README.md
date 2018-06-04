@@ -12,12 +12,6 @@ $ npm start
 
 > Think about how to scale for real-time performance
 
-- How to store settings and projects ?
-```
--> Versioned data should be stored as pure .json
--> Temporary or in-memory (for opt) should be stored in a nedb DB
-```
-
 - We should handle a logs mechanism
 ```
 -> Native Node.JS Console
