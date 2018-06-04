@@ -37,7 +37,7 @@ function timeout(delay = 1000) {
  * @func parseSocketMessages
  * @desc Parse socket messages
  * @param {!String} msg complete message string or buffer
- * @returns {Mordor.SocketMessage[]}
+ * @returns {server.SocketMessage[]}
  */
 function parseSocketMessages(msg) {
     const ret = [];

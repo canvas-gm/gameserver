@@ -24,6 +24,14 @@ declare namespace server {
         projects: any[];
     }
 
+    /**
+     * Socket Message interface
+     */
+    export interface SocketMessage {
+        title: string;
+        body: any;
+    }
+
 }
 
 export as namespace server;
