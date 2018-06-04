@@ -14,6 +14,7 @@ const {
 const uuid = require("uuid/v4");
 const is = require("@sindresorhus/is");
 const inquirer = require("inquirer");
+const { green } = require("chalk");
 
 // Require Internal Dependencies
 const Mordor = require("./src/mordor");
@@ -96,8 +97,9 @@ async function socketListening() {
         name: Manifest.name
     });
     if (!is.nullOrUndefined(error)) {
-        throw new Error(error);
+        throw new Error(error.message);
     }
+    console.log(green("Successfully registered server on Mordor!"));
 
     // Register projects!
     if (Manifest.projects.length > 0) {
