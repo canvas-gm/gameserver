@@ -5,5 +5,8 @@
             "port": 1337
         },
         "retryInterval": 10000
+    },
+    "server": {
+        "port": 3000
     }
 }

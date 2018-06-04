@@ -12,6 +12,9 @@ declare namespace server {
                 host?: string;
             },
             retryInterval: number;
+        },
+        server: {
+            port: number;
         }
     }
 

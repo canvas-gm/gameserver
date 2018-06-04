@@ -19,6 +19,9 @@ $ npm start
 ```
 
 - We should handle a logs mechanism
+```
+-> Native Node.JS Console
+```
 
 - On start
 ```
