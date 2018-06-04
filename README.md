@@ -23,14 +23,6 @@ $ npm start
 -> Native Node.JS Console
 ```
 
-- On start
-```
--> Initialize a Socket Connection to the Central API (Mordor)
--> Initialize the Socket Server.
--> Registering the Server and be sure to be the only one registered!
--> Registering (Public) Projects of the server (none in the beginning).
-```
-
 - How to authenticate users ?
 ```
 -> Authenticate user by generating a AccessToken on the Mordor API.

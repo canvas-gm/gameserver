@@ -3,9 +3,24 @@
  * @desc Utils functions
  */
 
+// Require Node.JS Dependencies
+const {
+    access,
+    constants: {
+        R_OK,
+        W_OK
+    }
+} = require("fs");
+const { promisify } = require("util");
+
 // Require Third-party Dependencies
 const { red } = require("chalk");
 const is = require("@sindresorhus/is");
+
+// Asynchronous FS Wrapper
+const AsyncFS = {
+    access: promisify(access)
+};
 
 /**
  * @func timeout
@@ -52,7 +67,29 @@ function parseSocketMessages(msg) {
     return ret;
 }
 
+/**
+ * @async
+ * @func hasEntry
+ * @desc Know if a file/dir exist or not!
+ * @param {!String} path file path
+ * @returns {Promise<Boolean>}
+ */
+async function hasEntry(path) {
+    try {
+        await AsyncFS.access(path, R_OK | W_OK);
+
+        return true;
+    }
+    catch (error) {
+        if (error.code === "ENOENT") {
+            return false;
+        }
+        throw error;
+    }
+}
+
 module.exports = {
     parseSocketMessages,
+    hasEntry,
     timeout
 };

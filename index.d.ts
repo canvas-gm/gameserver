@@ -18,6 +18,12 @@ declare namespace server {
         }
     }
 
+    export interface Manifest {
+        uid: string;
+        name: string;
+        projects: any[];
+    }
+
 }
 
 export as namespace server;
