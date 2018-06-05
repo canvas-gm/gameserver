@@ -6,12 +6,14 @@
 // Require Node.JS Dependencies
 const {
     access,
+    readdirSync,
     constants: {
         R_OK,
         W_OK
     }
 } = require("fs");
 const { promisify } = require("util");
+const { join, extname } = require("path");
 
 // Require Third-party Dependencies
 const { red } = require("chalk");
@@ -68,6 +70,32 @@ function parseSocketMessages(msg) {
 }
 
 /**
+ * @exports utils/getJavaScriptFiles
+ * @func getJavaScriptFiles
+ * @desc Get all javascript files name from a given directory path
+ * @param {!String} directoryPath directory where files are
+ * @returns {String[]}
+ *
+ * @throws {TypeError}
+ */
+function getJavaScriptFiles(directoryPath) {
+    if (!is.string(directoryPath)) {
+        throw new TypeError("dirname argument should be a string");
+    }
+    const ret = [];
+
+    const files = readdirSync(directoryPath);
+    for (const file of files) {
+        if (extname(file) !== ".js") {
+            continue;
+        }
+        ret.push(join(directoryPath, file));
+    }
+
+    return ret;
+}
+
+/**
  * @async
  * @func hasEntry
  * @desc Know if a file/dir exist or not!
@@ -90,6 +118,7 @@ async function hasEntry(path) {
 
 module.exports = {
     parseSocketMessages,
+    getJavaScriptFiles,
     hasEntry,
     timeout
 };

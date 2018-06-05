@@ -17,7 +17,14 @@ class SocketMessageWrapper extends events {
      */
     constructor() {
         super();
+        this.on("error", console.error);
         this.currConnectedSockets = new Set();
+
+        /**
+         * Close every sockets properly on critical error(s)
+         */
+        process.once("SIGINT", this.disconnectAllSockets.bind(this));
+        process.once("exit", this.disconnectAllSockets.bind(this));
     }
 
     /**

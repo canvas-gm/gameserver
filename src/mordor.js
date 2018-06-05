@@ -39,9 +39,30 @@ class Mordor extends events {
         super();
         this.on("error", console.error);
         this.requestsCount = 0;
+        this.alwaysRestart = true;
 
         /** @type {net.Socket} */
         this.client = null;
+
+        /**
+         * Close every sockets properly on critical error(s)
+         */
+        process.once("SIGINT", this.close.bind(this));
+        process.once("exit", this.close.bind(this));
+    }
+
+    /**
+     * @method close
+     * @desc Close Mordor client
+     * @memberof Mordor#
+     * @returns {void}
+     */
+    close() {
+        this.alwaysRestart = false;
+        if (this.client) {
+            this.client.destroy();
+        }
+        setImmediate(process.exit);
     }
 
     /**
@@ -60,6 +81,9 @@ class Mordor extends events {
 
         // If mordor connexion end, try to re-synchronise
         this.client.on("end", async() => {
+            if (!this.alwaysRestart) {
+                return;
+            }
             try {
                 await timeout(1000);
                 await this.init();
