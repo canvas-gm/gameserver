@@ -34,13 +34,14 @@ catch (error) {
 const uuid = require("uuid/v4");
 const is = require("@sindresorhus/is");
 const inquirer = require("inquirer");
-const { green } = require("chalk");
+const { green, blue, yellow } = require("chalk");
 const winston = require("winston");
 
 // Require Internal Dependencies
-const Mordor = require("./src/mordor");
-const socketHandler = require("./src/socketHandler");
+const MordorClient = require("./src/MordorClient");
 const { hasEntry } = require("./src/utils");
+const socketMessageWrapper = new (require("./src/SocketHandler"))();
+const { getJavaScriptFiles } = require("./src/utils");
 
 // Asynchronous FS Wrapper
 const AsyncFS = {
@@ -49,8 +50,8 @@ const AsyncFS = {
     readFile: promisify(readFile)
 };
 
-/** @type {Mordor} */
-let MordorSocket = null;
+/** @type {MordorClient} */
+let MordorClientSocket = null;
 
 /** @type {server.Manifest} */
 let Manifest = null;
@@ -71,11 +72,10 @@ async function verifyRootProject() {
     const manifestPath = join(projectsDir, "manifest.json");
 
     // Verify if we have access to directories and files
-    if (await hasEntry(projectsDir) === false) {
-        await AsyncFS.mkdir(projectsDir);
-    }
-    if (await hasEntry(logsDir) === false) {
-        await AsyncFS.mkdir(logsDir);
+    for (const dir of [projectsDir, logsDir]) {
+        if (await hasEntry(dir) === false) {
+            await AsyncFS.mkdir(dir);
+        }
     }
 
     // Initialize logger on global
@@ -119,24 +119,24 @@ async function verifyRootProject() {
 
 /**
  * @async
- * @func socketListening
+ * @func socketIsListening
  * @returns {Promise<void>}
  */
-async function socketListening() {
+async function socketIsListening() {
     console.log(`Socket server is listening on port ${settings.server.port}`);
 
     // Register server!
-    const { error } = await MordorSocket.send("registerServer", {
+    const { error } = await MordorClientSocket.send("registerServer", {
         uid: Manifest.uid,
         name: Manifest.name
     });
     if (!is.nullOrUndefined(error)) {
         throw new Error(error.message);
     }
-    console.log(green("Successfully registered server on Mordor!"));
+    console.log(green("Successfully registered server on MordorClient!"));
     logger.log({
         level: "info",
-        message: "Successfully registered server on Mordor!"
+        message: "Successfully registered server on MordorClient!"
     });
 
     // Register projects!
@@ -154,15 +154,40 @@ async function main() {
     // Verify if the project is correctly initialized!
     Manifest = await verifyRootProject();
 
-    // Create and initialize Mordor Client connection
-    MordorSocket = await new Mordor().init();
+    // Create and initialize MordorClient Client connection
+    MordorClientSocket = await new MordorClient().init();
+
+    /**
+     * Load all sockets handlers!
+     */
+    const socketHandlers = getJavaScriptFiles(join(__dirname, "src/sockets")).map(require);
+    for (const handler of socketHandlers) {
+        console.log(blue(`Loading socket event :: ${yellow(handler.name)}`));
+        const bindedHandler = handler.bind(socketMessageWrapper);
+
+        socketMessageWrapper.on(handler.name, async function eventHandler(socket, ...args) {
+            console.log(blue(`Event ${handler.name} triggered by socket ${socket.id}`));
+            try {
+                const ret = await bindedHandler(socket, ...args);
+                if (ret.exit) {
+                    return;
+                }
+                socketMessageWrapper.send(socket, handler.name, ret || { error: null });
+            }
+            catch (error) {
+                socketMessageWrapper.send(socket, handler.name, { error });
+            }
+        });
+    }
 
     // Initialize Socket Server
-    const socketServer = createServer(socketHandler);
+    const socketServer = createServer(socketMessageWrapper.connectSocket);
     socketServer.on("error", console.error);
-    socketServer.on("listening", socketListening);
+    socketServer.on("listening", socketIsListening);
     socketServer.listen(settings.server.port);
 }
+
+// Execute main handler!
 main().catch(function errorHandler(error) {
     console.error(error);
     if (logger) {

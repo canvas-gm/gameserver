@@ -19,18 +19,18 @@ const settings = require("../config/editableSettings.json");
 /**
  * @const MAX_REQUESTS
  * @type {Number}
- * @desc Maximum number of requests from Mordor
+ * @desc Maximum number of requests from MordorClient
  */
 const MAX_REQUESTS = 60;
 
 /**
- * @class Mordor
+ * @class MordorClient
  * @extends events
  *
  * @property {Number} requestsCount
  * @property {net.Socket} client
  */
-class Mordor extends events {
+class MordorClient extends events {
 
     /**
      * @constructor
@@ -53,8 +53,8 @@ class Mordor extends events {
 
     /**
      * @method close
-     * @desc Close Mordor client
-     * @memberof Mordor#
+     * @desc Close MordorClient client
+     * @memberof MordorClient#
      * @returns {void}
      */
     close() {
@@ -69,7 +69,7 @@ class Mordor extends events {
      * @async
      * @method init
      * @desc Initialize socket client
-     * @memberof Mordor#
+     * @memberof MordorClient#
      * @returns {Promise<this>}
      */
     async init() {
@@ -79,7 +79,7 @@ class Mordor extends events {
         // Handle (parse) socket data!
         this.client.on("data", this.dataHandler.bind(this));
 
-        // If mordor connexion end, try to re-synchronise
+        // If MordorClient connexion end, try to re-synchronise
         this.client.on("end", async() => {
             if (!this.alwaysRestart) {
                 return;
@@ -96,7 +96,7 @@ class Mordor extends events {
 
         // Handle event ping/pong
         this.on("ping", (dt) => {
-            console.log(blue("Ping received from Mordor. Send-it back!"));
+            console.log(blue("Ping received from MordorClient. Send-it back!"));
             this.send("ping", dt, true).catch(console.error);
         });
         console.log(green("Successfully initialized socket connection"));
@@ -125,7 +125,7 @@ class Mordor extends events {
 
         while (is.nullOrUndefined(this.client)) {
             try {
-                this.client = await Mordor.initializeSocketConnection();
+                this.client = await MordorClient.initializeSocketConnection();
             }
             catch (error) {
                 if (error.code === "ECONNREFUSED") {
@@ -158,7 +158,7 @@ class Mordor extends events {
     /**
      * @method dataHandler
      * @desc Method to handle socket data
-     * @memberof Mordor#
+     * @memberof MordorClient#
      * @param {!Buffer} data data
      * @returns {void}
      */
@@ -189,11 +189,11 @@ class Mordor extends events {
      * @public
      * @method send
      * @template T
-     * @desc Send a new message to the mordor!
-     * @memberof Mordor#
+     * @desc Send a new message to the MordorClient!
+     * @memberof MordorClient#
      * @param {!String} title message title
      * @param {Object=} [body={}] message body
-     * @param {Boolean=} [dontExpectReturn=false] True if we dont expect a return from Mordor
+     * @param {Boolean=} [dontExpectReturn=false] True if we dont expect a return from MordorClient
      * @returns {Promise<T | void>}
      *
      * @throws {TypeError}
@@ -206,7 +206,7 @@ class Mordor extends events {
             const data = JSON.stringify({ title, body });
             this.client.write(Buffer.from(data.concat("\n")));
 
-            // Return if we dont expect a return from Mordor
+            // Return if we dont expect a return from MordorClient
             if (dontExpectReturn) {
                 return resolve();
             }
@@ -229,4 +229,4 @@ class Mordor extends events {
 
 }
 
-module.exports = Mordor;
+module.exports = MordorClient;
