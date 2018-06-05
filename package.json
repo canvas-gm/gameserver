@@ -5,6 +5,7 @@
   "main": "index.js",
   "dependencies": {
     "@sindresorhus/is": "^0.9.0",
+    "argon2": "^0.19.3",
     "chalk": "^2.4.1",
     "inquirer": "^6.0.0",
     "make-promises-safe": "^1.1.0",

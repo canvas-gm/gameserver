@@ -11,6 +11,9 @@ const is = require("@sindresorhus/is");
 function authentication(socket, Mordor, { clientId }) {
     return new Promise(async(resolve, reject) => {
         console.log("authentication event triggered!");
+        if (socket.isAuthenticated) {
+            return resolve();
+        }
 
         // Setup authentication timeout
         const timeOut = setTimeout(() => {
@@ -18,7 +21,7 @@ function authentication(socket, Mordor, { clientId }) {
         }, 5000);
 
         // Generate AccessToken on the remote Mordor!
-        const { error: tokenError } = await Mordor.send("generateAccessToken", {
+        const { error: tokenError, serverId } = await Mordor.send("generateAccessToken", {
             socketId: socket.id,
             clientId
         }, 1000);
@@ -28,8 +31,10 @@ function authentication(socket, Mordor, { clientId }) {
             return reject(tokenError);
         }
 
-        const { error: atError } = await this.sendAndWait(socket, {
+        // Request AccessToken to client
+        const { error: atError, accessToken } = await this.sendAndWait(socket, {
             title: "requestAccessToken",
+            body: { serverId },
             timeOut: 2000
         });
         if (!is.nullOrUndefined(atError)) {
@@ -38,8 +43,21 @@ function authentication(socket, Mordor, { clientId }) {
             return reject(atError);
         }
 
+        // Verify token on Mordor
+        const { error } = await Mordor.send("validateAccessToken", {
+            accessToken,
+            socketId: socket.id,
+            clientId
+        }, 1000);
+        if (!is.nullOrUndefined(error)) {
+            clearTimeout(timeOut);
+
+            return reject(error);
+        }
+
         // Clear timeout!
         clearTimeout(timeOut);
+        socket.isAuthenticated = true;
 
         return resolve();
     });
