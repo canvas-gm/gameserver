@@ -97,7 +97,7 @@ class MordorClient extends events {
         // Handle event ping/pong
         this.on("ping", (dt) => {
             console.log(blue("Ping received from MordorClient. Send-it back!"));
-            this.send("ping", dt, true).catch(console.error);
+            this.send("ping", dt, 0).catch(console.error);
         });
         console.log(green("Successfully initialized socket connection"));
         global.logger.log({
@@ -193,12 +193,12 @@ class MordorClient extends events {
      * @memberof MordorClient#
      * @param {!String} title message title
      * @param {Object=} [body={}] message body
-     * @param {Boolean=} [dontExpectReturn=false] True if we dont expect a return from MordorClient
+     * @param {Number=} [timeOut=5000] Send timeout!
      * @returns {Promise<T | void>}
      *
      * @throws {TypeError}
      */
-    send(title, body = {}, dontExpectReturn = false) {
+    send(title, body = {}, timeOut = 5000) {
         return new Promise((resolve, reject) => {
             if (!is.string(title)) {
                 throw new TypeError("title argument should be typeof string");
@@ -207,7 +207,7 @@ class MordorClient extends events {
             this.client.write(Buffer.from(data.concat("\n")));
 
             // Return if we dont expect a return from MordorClient
-            if (dontExpectReturn) {
+            if (timeOut === 0) {
                 return resolve();
             }
 
@@ -220,7 +220,7 @@ class MordorClient extends events {
             timeOutRef = setTimeout(() => {
                 this.removeListener(title, handler);
                 reject(new Error(`Timeout message ${title}`));
-            }, 5000);
+            }, timeOut);
             this.addListener(title, handler);
 
             return void 0;

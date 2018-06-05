@@ -152,7 +152,7 @@ async function main() {
     MordorClientSocket = await new MordorClient().init();
 
     // Load all sockets commands.
-    autoLoader(SocketHandler, join(__dirname, "sockets"));
+    autoLoader(SocketHandler, MordorClientSocket, join(__dirname, "sockets"));
 
     // Initialize Socket Server
     const socketServer = createServer(SocketHandler.connectSocket);

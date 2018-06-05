@@ -8,10 +8,11 @@ const { getJavaScriptFiles } = require("./utils");
  * @function autoSocketLoaded
  * @desc Load all sockets handlers!
  * @param {*} SocketHandler SocketHandler
+ * @param {*} MordorClientSocket MordorClientSocket
  * @param {!String} path Path to directory
  * @returns {void}
  */
-function autoSocketLoaded(SocketHandler, path) {
+function autoSocketLoaded(SocketHandler, MordorClientSocket, path) {
     const socketHandlers = getJavaScriptFiles(path).map(require);
     for (const handler of socketHandlers) {
         console.log(blue(`Loading socket event :: ${yellow(handler.name)}`));
@@ -20,7 +21,7 @@ function autoSocketLoaded(SocketHandler, path) {
         SocketHandler.on(handler.name, async function eventHandler(socket, ...args) {
             console.log(blue(`Event ${handler.name} triggered by socket ${socket.id}`));
             try {
-                const ret = await bindedHandler(socket, ...args);
+                const ret = await bindedHandler(socket, MordorClientSocket, ...args);
                 if (ret.exit) {
                     return;
                 }
