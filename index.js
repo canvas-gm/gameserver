@@ -11,6 +11,13 @@ const {
     writeFileSync
 } = require("fs");
 
+// Require Third-party Dependencies
+const uuid = require("uuid/v4");
+const is = require("@sindresorhus/is");
+const inquirer = require("inquirer");
+const { green } = require("chalk");
+const winston = require("winston");
+
 /**
  * @const settings
  * @type {server.Configuration}
@@ -29,13 +36,6 @@ catch (error) {
     );
     process.exit(0);
 }
-
-// Require Third-party Dependencies
-const uuid = require("uuid/v4");
-const is = require("@sindresorhus/is");
-const inquirer = require("inquirer");
-const { green } = require("chalk");
-const winston = require("winston");
 
 // Require Internal Dependencies
 const MordorClient = require("./src/MordorClient");
@@ -56,16 +56,13 @@ let MordorClientSocket = null;
 /** @type {server.Manifest} */
 let Manifest = null;
 
-// Winston logger;
-let logger = null;
-
 /**
  * @async
- * @func verifyRootProject
+ * @func initializeProject
  * @desc Initialize root project!
  * @returns {Promise<server.Manifest>}
  */
-async function verifyRootProject() {
+async function initializeProject() {
     // Functions var
     const projectsDir = join(__dirname, "projects");
     const logsDir = join(__dirname, "logs");
@@ -79,7 +76,7 @@ async function verifyRootProject() {
     }
 
     // Initialize logger on global
-    logger = winston.createLogger({
+    global.logger = winston.createLogger({
         level: "info",
         format: winston.format.json(),
         transports: [
@@ -88,7 +85,6 @@ async function verifyRootProject() {
             })
         ]
     });
-    global.logger = logger;
 
     // Get server manifest!
     if (await hasEntry(manifestPath) === false) {
@@ -120,6 +116,7 @@ async function verifyRootProject() {
 /**
  * @async
  * @func socketIsListening
+ * @desc Register server and projects to Mordor when the Socket Server is listening!
  * @returns {Promise<void>}
  */
 async function socketIsListening() {
@@ -134,7 +131,7 @@ async function socketIsListening() {
         throw new Error(error.message);
     }
     console.log(green("Successfully registered server on MordorClient!"));
-    logger.log({
+    global.logger.log({
         level: "info",
         message: "Successfully registered server on MordorClient!"
     });
@@ -151,13 +148,10 @@ async function socketIsListening() {
  * @returns {Promise<void>}
  */
 async function main() {
-    // Verify if the project is correctly initialized!
-    Manifest = await verifyRootProject();
-
-    // Create and initialize MordorClient Client connection
+    Manifest = await initializeProject();
     MordorClientSocket = await new MordorClient().init();
 
-    // Load all sockets handlers!
+    // Load all sockets commands.
     autoLoader(SocketHandler, join(__dirname, "sockets"));
 
     // Initialize Socket Server
@@ -168,12 +162,12 @@ async function main() {
 }
 
 // Execute main handler!
-main().catch(function errorHandler(error) {
+try {
+    main();
+}
+catch (error) {
     console.error(error);
-    if (logger) {
-        logger.log({
-            level: "error",
-            message: error.toString()
-        });
+    if (global.logger) {
+        global.logger.log({ level: "error", message: error.toString() });
     }
-});
+}
