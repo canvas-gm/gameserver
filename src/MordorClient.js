@@ -219,7 +219,7 @@ class MordorClient extends events {
             }
             timeOutRef = setTimeout(() => {
                 this.removeListener(title, handler);
-                reject(new Error("Timeout"));
+                reject(new Error(`Timeout message ${title}`));
             }, 5000);
             this.addListener(title, handler);
 

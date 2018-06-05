@@ -34,14 +34,14 @@ catch (error) {
 const uuid = require("uuid/v4");
 const is = require("@sindresorhus/is");
 const inquirer = require("inquirer");
-const { green, blue, yellow } = require("chalk");
+const { green } = require("chalk");
 const winston = require("winston");
 
 // Require Internal Dependencies
 const MordorClient = require("./src/MordorClient");
 const { hasEntry } = require("./src/utils");
-const socketMessageWrapper = new (require("./src/SocketHandler"))();
-const { getJavaScriptFiles } = require("./src/utils");
+const SocketHandler = new (require("./src/SocketHandler"))();
+const autoLoader = require("./src/autoloader");
 
 // Asynchronous FS Wrapper
 const AsyncFS = {
@@ -157,31 +157,11 @@ async function main() {
     // Create and initialize MordorClient Client connection
     MordorClientSocket = await new MordorClient().init();
 
-    /**
-     * Load all sockets handlers!
-     */
-    const socketHandlers = getJavaScriptFiles(join(__dirname, "src/sockets")).map(require);
-    for (const handler of socketHandlers) {
-        console.log(blue(`Loading socket event :: ${yellow(handler.name)}`));
-        const bindedHandler = handler.bind(socketMessageWrapper);
-
-        socketMessageWrapper.on(handler.name, async function eventHandler(socket, ...args) {
-            console.log(blue(`Event ${handler.name} triggered by socket ${socket.id}`));
-            try {
-                const ret = await bindedHandler(socket, ...args);
-                if (ret.exit) {
-                    return;
-                }
-                socketMessageWrapper.send(socket, handler.name, ret || { error: null });
-            }
-            catch (error) {
-                socketMessageWrapper.send(socket, handler.name, { error });
-            }
-        });
-    }
+    // Load all sockets handlers!
+    autoLoader(SocketHandler, join(__dirname, "sockets"));
 
     // Initialize Socket Server
-    const socketServer = createServer(socketMessageWrapper.connectSocket);
+    const socketServer = createServer(SocketHandler.connectSocket);
     socketServer.on("error", console.error);
     socketServer.on("listening", socketIsListening);
     socketServer.listen(settings.server.port);

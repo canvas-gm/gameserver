@@ -80,7 +80,7 @@ class SocketHandler extends events {
      */
     static socketDataHandler(socket, msg) {
         const messages = parseSocketMessages(msg.toString());
-        if (SocketHandler.verifySocketRequestCount(socket, messages.length)) {
+        if (!SocketHandler.verifySocketRequestCount(socket, messages.length)) {
             return [];
         }
 
@@ -248,6 +248,7 @@ class SocketHandler extends events {
         for (const socket of this.currConnectedSockets) {
             socket.destroy(reason);
         }
+        setImmediate(process.exit);
     }
 
 }
