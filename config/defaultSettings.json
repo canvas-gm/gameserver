@@ -11,8 +11,8 @@
         "authentication": {
             "mordor": true,
             "anonymous": true,
-            "anonymousPassword": null,
-            "shouldBeApproved": false
+            "password": null,
+            "approve": false
         }
     }
 }

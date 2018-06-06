@@ -28,6 +28,8 @@ const MAX_REQUESTS = 60;
  * @extends events
  *
  * @property {Number} requestsCount
+ * @property {Boolean} isConnected Know if Socket is connected
+ * @property {Boolean} alwaysRestart Ask the client to always re-establish Socket connexion
  * @property {net.Socket} client
  */
 class MordorClient extends events {
@@ -39,6 +41,7 @@ class MordorClient extends events {
         super();
         this.on("error", console.error);
         this.requestsCount = 0;
+        this.isConnected = false;
         this.alwaysRestart = true;
 
         /** @type {net.Socket} */
@@ -62,6 +65,7 @@ class MordorClient extends events {
         if (this.client) {
             this.client.destroy();
         }
+        this.isConnected = false;
         setImmediate(process.exit);
     }
 
@@ -75,6 +79,7 @@ class MordorClient extends events {
     async init() {
         this.client = null;
         await this._synchroniseConnection();
+        this.isConnected = true;
 
         // Handle (parse) socket data!
         this.client.on("data", this.dataHandler.bind(this));

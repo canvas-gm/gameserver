@@ -12,8 +12,6 @@ $ npm start
 
 - How to authenticate users ?
 ```
--> Authenticate user by generating a AccessToken on the Mordor API.
--> Allow users to Authenticate in anonymous (With an optional server password).
 -> Request approval
 ```
 
