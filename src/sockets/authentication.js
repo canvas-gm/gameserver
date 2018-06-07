@@ -1,13 +1,31 @@
+// Require Node.JS Dependencies
+const { join } = require("path");
+
 // Require Third-party Dependencies
 const is = require("@sindresorhus/is");
+const Datastore = require("nedb-promises");
 
 // Require settings
 const settings = require("../../config/editableSettings.json").server.authentication;
 const requirePassword = new Boolean(settings.password);
+const dbDir = join(__dirname, "../../db");
 
 // Always set anonymous to true if mordor is false
 if (new Boolean(settings.mordor) === false) {
     settings.anonymous = true;
+}
+
+/**
+ * @async
+ * @func storeUser
+ * @desc Store user in the local database
+ * @returns {Promise<void>}
+ */
+async function storeUser() {
+    // Load database
+    const db = Datastore.create(join(dbDir, "storage.db"));
+    await db.load();
+
 }
 
 /**
@@ -91,6 +109,7 @@ function authentication(socket, Mordor, { clientId, anonymous = false }) {
 
         // Clear timeout!
         clearTimeout(timeOut);
+        await storeUser();
         socket.isAuthenticated = true;
 
         return resolve();
