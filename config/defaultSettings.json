@@ -12,6 +12,7 @@
             "mordor": true,
             "anonymous": true,
             "password": null,
+            "administratorPassword": "p@ssword",
             "approve": false
         }
     }

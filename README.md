@@ -8,24 +8,13 @@ $ npm install
 $ npm start
 ```
 
-## TODO
+## Roadmap
 
-- How to authenticate users ?
-```
--> Request approval
-```
+### Major
+- Store users in a local .db
+- Find a way to manage administrator right
+- Implement first ACLs policy.
+- Register complete Servers settings
 
-- How to manage ACL for a user or a group of users ?
-```
--> ACL should be managed at the server level (not at the level project).
--> They can be applied to the server or a project.
-```
-
-- Manage project as a GIT repository
-- How to achieve addon(s) ?
-```
--> Registry?
--> ACL?
-```
-
-- Runtime behavior ?
+### Minor
+- Manage authentication approval
