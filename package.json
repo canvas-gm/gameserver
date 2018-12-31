@@ -4,7 +4,7 @@
   "description": "CGM Game Server",
   "main": "index.js",
   "dependencies": {
-    "@sindresorhus/is": "^0.9.0",
+    "@sindresorhus/is": "^0.14.0",
     "argon2": "^0.19.3",
     "chalk": "^2.4.1",
     "inquirer": "^6.2.1",
