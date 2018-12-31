@@ -4,6 +4,7 @@ const { join } = require("path");
 // Require Third-party Dependencies
 const is = require("@sindresorhus/is");
 const Datastore = require("nedb-promises");
+const randToken = require("rand-token");
 
 // Require settings
 const settings = require("../../config/editableSettings.json").server.authentication;
@@ -19,13 +20,17 @@ if (new Boolean(settings.mordor) === false) {
  * @async
  * @func storeUser
  * @desc Store user in the local database
- * @returns {Promise<void>}
+ * @param {Object} client client to authenticate
+ * @returns {Promise<String>}
  */
-async function storeUser() {
+async function storeUser(client) {
     // Load database
     const db = Datastore.create(join(dbDir, "storage.db"));
     await db.load();
 
+    const token = randToken.generate(16);
+
+    return token;
 }
 
 /**
@@ -96,7 +101,7 @@ function authentication(socket, Mordor, { clientId, anonymous = false }) {
         }
 
         // Verify token on Mordor
-        const { error } = await Mordor.send("validateAccessToken", {
+        const { error, client } = await Mordor.send("validateAccessToken", {
             accessToken,
             socketId: socket.id,
             clientId
@@ -109,7 +114,7 @@ function authentication(socket, Mordor, { clientId, anonymous = false }) {
 
         // Clear timeout!
         clearTimeout(timeOut);
-        await storeUser();
+        await storeUser(client);
         socket.isAuthenticated = true;
 
         return resolve();
