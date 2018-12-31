@@ -7,13 +7,13 @@
     "@sindresorhus/is": "^0.9.0",
     "argon2": "^0.19.3",
     "chalk": "^2.4.1",
-    "inquirer": "^6.0.0",
+    "inquirer": "^6.2.1",
     "make-promises-safe": "^1.1.0",
-    "nedb-promises": "^3.0.0",
+    "nedb-promises": "^3.0.2",
     "rand-token": "^0.4.0",
-    "uuid": "^3.2.1",
-    "winston": "^3.0.0-rc6",
-    "zen-observable": "^0.8.8"
+    "uuid": "^3.3.2",
+    "winston": "^3.1.0",
+    "zen-observable": "^0.8.11"
   },
   "devDependencies": {
     "@types/es6-shim": "^0.31.39",
