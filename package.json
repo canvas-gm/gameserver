@@ -18,7 +18,7 @@
   "devDependencies": {
     "@types/es6-shim": "^0.31.39",
     "@types/node": "^10.12.18",
-    "eslint": "^4.19.1"
+    "eslint": "^5.11.1"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
